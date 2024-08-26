@@ -102,6 +102,19 @@ impl NordDropFFI {
 
         let moose = initialize_moose(&self.logger, config.moose)?;
 
+        self.event_dispatcher.dispatch(crate::Event {
+            timestamp: 0,
+            kind: crate::EventKind::RuntimeError {
+                status: drop_core::Status::Finalized,
+            },
+        });
+        self.event_dispatcher.dispatch(crate::Event {
+            timestamp: 0,
+            kind: crate::EventKind::RuntimeError {
+                status: drop_core::Status::PermissionDenied,
+            },
+        });
+
         let storage = Arc::new(open_database(
             &config.drop.storage_path,
             &self.event_dispatcher,
@@ -588,7 +601,7 @@ fn open_database(
                 } else {
                     // Inform app that we wiped the old DB file
                     events.dispatch(crate::EventKind::RuntimeError {
-                        status: drop_core::Status::DbLost as _,
+                        status: drop_core::Status::DbLost,
                     });
                 };
 
